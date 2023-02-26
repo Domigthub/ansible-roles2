@@ -1,0 +1,9 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: installing test required libs
+      apt:
+        pkg: "{{ node_exporter_test_packages }}"
+        state: present

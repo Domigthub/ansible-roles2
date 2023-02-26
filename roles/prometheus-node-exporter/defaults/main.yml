@@ -1,0 +1,68 @@
+---
+## General
+
+node_exporter_version: 1.1.1
+node_exporter_release_system: "linux-{{ node_exporter_arch }}"
+
+# Set true to force the download and installation of the binary
+node_exporter_force_reinstall: false
+
+## Files & Paths
+node_exporter_environment_path: /etc/default
+# node_exporter_log_path: /var/log/node_exporter
+# node_exporter_log_file: node_exporter.log
+node_exporter_logrotate_enabled: true
+node_exporter_log_output: journal
+# If you need output to a file, you can use file:{{ node_exporter_log_path }}/{{ node_exporter_log_file }}, append:..., rsyslog and other
+# options in Debian 10 (see https://www.freedesktop.org/software/systemd/man/systemd.exec.html)
+node_exporter_root_path: /opt/node_exporter
+node_exporter_bin_path: "{{ node_exporter_root_path }}/bin"
+node_exporter_package: "node_exporter-{{ node_exporter_version }}.{{ node_exporter_release_system }}.tar.gz"
+node_exporter_download_path: /usr/src
+node_exporter_package_path: "{{ node_exporter_download_path }}/{{ node_exporter_package }}"
+node_exporter_release_name: "node_exporter-{{ node_exporter_version }}.{{ node_exporter_release_system }}"
+node_exporter_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/{{ node_exporter_package }}"
+
+_node_exporter_version_all: "{{ node_exporter_version.split('.') }}"
+_node_exporter_collectors_as_string_version: "{{ _node_exporter_version_all[0] | int == 0 and _node_exporter_version_all[1] | int < 15 }}"
+_node_exporter_command_version_check: "node_exporter {{ _node_exporter_collectors_as_string_version | ternary('-','--') }}version"
+_node_exporter_config_param_selector: --
+## Service options
+
+# Owner
+node_exporter_user: prometheus
+node_exporter_group: prometheus
+node_exporter_private_tmp: true
+# manager service
+node_exporter_manage_service: true
+# start on boot
+node_exporter_service_enabled: true
+# current state: started, stopped
+node_exporter_service_state: started
+
+# Log
+node_exporter_log_level: warn  # [debug, info, warn, error, fatal]
+
+# Port & path
+node_exporter_host_name: "{{ ansible_nodename }}"
+node_exporter_port: 9100
+node_exporter_path: metrics
+
+# Run options
+node_exporter_collectors_enabled: textfile,diskstats,filesystem,loadavg,meminfo,netdev,stat,filefd
+node_exporter_textfile_collector_dir: "{{ node_exporter_root_path }}/textfile_collector"
+node_exporter_collector_diskstats_ignored_devices: ^(ram|dm|rootfs|loop|fd|(h|s|v|xv)d[a-z]|nvme\\d+n\\d+p)\\d+$
+node_exporter_collector_filesystem_ignored_fs_types: ^(sys|proc|root|rpc_pipe|tmp)fs$
+# It's recommended to avoid collecting on nfs filesystems because if they are
+# in stale, node exporter requests are stalled too:
+# node_exporter_collector_filesystem_ignored_fs_types: ^(sys|proc|root|rpc_pipe|tmp|n)fs4?$
+
+# Roles
+# node_exporter_textfile_collector_files:
+#  - "filename":
+#    - metric_name: "metric_name"
+#      metric_labels:
+#        - "label1": "value1"
+#        - "label2": "value2"
+
+node_exporter_config_extra_options: []
